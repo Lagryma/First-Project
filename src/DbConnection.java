@@ -9,22 +9,15 @@ public class DbConnection {
 	// The max number of database connection retries.
 	private static final int MAX_RETRY = 3;
 	
+	// Initialize database configuration variables.
+	private static String hostName, port, databaseName, username, password;
+	
 	/**
 	 * Returns the database connection.
 	 * @return a connection with a database.
 	 */
 	public static Connection db_connect() {
 		Connection conn = null;
-		
-		// Get the properties of .ini file.
-		Properties properties = load_ini();
-		
-		// Extract the properties of .ini file.
-		String hostName = properties.getProperty("hostname");
-		String port = properties.getProperty("port");
-		String databaseName = properties.getProperty("databasename");
-		String username = properties.getProperty("username");
-		String password = properties.getProperty("password");
 		
 		// Try to establish database connection.
 		try {
@@ -55,6 +48,21 @@ public class DbConnection {
 		}
 		
 		return conn;
+	}
+	
+	/**
+	 * Store configuration values of .ini file.
+	 */
+	public static void initialize_config() {
+		// Get the properties of .ini file.
+		Properties properties = load_ini();
+		
+		// Extract the properties of .ini file.
+		hostName = properties.getProperty("hostname");
+		port = properties.getProperty("port");
+		databaseName = properties.getProperty("databasename");
+		username = properties.getProperty("username");
+		password = properties.getProperty("password");
 	}
 	
 	/**

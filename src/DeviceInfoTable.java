@@ -161,6 +161,9 @@ public class DeviceInfoTable extends JFrame implements ActionListener {
 	}
 	
 	public static void main(String[] args) {
+		// Load .ini file properties.
+		DbConnection.initialize_config();
+		
 		// Initialize main frame.
 		new DeviceInfoTable();
 	}
