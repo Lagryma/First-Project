@@ -161,8 +161,8 @@ public class DeviceInfoTable extends JFrame implements ActionListener {
 	}
 	
 	public static void main(String[] args) {
-		// Load .ini file properties.
-		DbConnection.initialize_config();
+		// Initialize .ini configuration then create connection pool.
+		DbConnection.initialize_db();
 		
 		// Initialize main frame.
 		new DeviceInfoTable();

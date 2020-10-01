@@ -1,16 +1,83 @@
 import java.io.FileInputStream;
 import java.sql.*;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import javax.swing.JOptionPane;
 
 public class DbConnection {
 	// Location/name of the .ini file.
 	private static final String INI_FILE = "inifile.ini";
 	// The max number of database connection retries.
 	private static final int MAX_RETRY = 3;
+	// Max size of connection pool.
+	private static final int POOL_SIZE = 12;
+	
+	// List of used and unused connection pools.
+	private static List<Connection> connectionPool, usedConnections = new ArrayList<>();
 	
 	// Initialize database configuration variables.
 	private static String hostName, port, databaseName, username, password;
+	
+	/**
+	 * Creates a connection pool.
+	 */
+	public static void createConnectionPool() {
+		// Initialize the pool
+		connectionPool = new ArrayList<>(POOL_SIZE);
+		
+		for (int i = 0;i < POOL_SIZE;i++) {
+			connectionPool.add(db_connect());
+		}
+	}
+	
+	/**
+	 * Gets a connection from the connection pool.
+	 * @return a connection from the connection pool.
+	 */
+	public static Connection get_connection() {
+		// Check if connection pool is empty
+		if (connectionPool.isEmpty()) {
+			// Create a connection pool if number of pools is less than max pool size.
+			if (usedConnections.size() < POOL_SIZE) {
+				connectionPool.add(db_connect());
+			}
+			// All connections are being used.
+			else {
+				JOptionPane.showMessageDialog(null, "No available connections from pool.");
+				return null;
+			}
+		}
+		
+		// Get one connection from the connection pool.
+		Connection conn = connectionPool.remove(connectionPool.size() - 1);
+		
+		// Check if connection is still alive and working.
+		try {
+			if (!conn.isValid(1000)) {
+				conn = db_connect();
+			}
+		}
+		// Error establishing connection with database.
+		catch(Exception e) {
+			conn = null;
+		}
+		
+		// Set the connection as used connection.
+		usedConnections.add(conn);
+		
+		return conn;
+	}
+	
+	/**
+	 * Releases a connection and add it back to the connection pool.
+	 * @param conn is the connection to be released.
+	 */
+	public static void releaseConnection(Connection conn) {
+		connectionPool.add(conn);
+		usedConnections.remove(conn);
+	}
 	
 	/**
 	 * Returns the database connection.
@@ -35,10 +102,9 @@ public class DbConnection {
 				
 				// If no connection is established, increment number of retries and wait for
 				// a fixed amount of time
-				if (conn == null) {
+				if (!conn.isValid(1000)) {
 					System.out.println("Error connecting to database. Retrying...");
 					retryCount++;
-					Thread.sleep(1000);
 				}
 			}
 		}
@@ -51,9 +117,9 @@ public class DbConnection {
 	}
 	
 	/**
-	 * Store configuration values of .ini file.
+	 * Initializes required configuration values.
 	 */
-	public static void initialize_config() {
+	public static void initialize_db() {
 		// Get the properties of .ini file.
 		Properties properties = load_ini();
 		
@@ -63,24 +129,18 @@ public class DbConnection {
 		databaseName = properties.getProperty("databasename");
 		username = properties.getProperty("username");
 		password = properties.getProperty("password");
+		
+		// Create the connection pool after loading configuration.
+		createConnectionPool();
 	}
 	
 	/**
-	 * Closes the database connections.
-	 * @param conn is the Connection to be closed.
+	 * Closes Statements and ResultSet.
 	 * @param stm is the Statement to be closed.
 	 * @param ps is the PreparedStatement to be closed.
 	 * @param rs is the ResultSet to be closed.
 	 */
-	public static void close_connections(Connection conn, Statement stm, PreparedStatement ps, ResultSet rs) {
-		if (conn != null) {
-	        try {
-	            conn.close();
-	        } 
-	        catch (SQLException e) {
-	        	// Empty
-	        }
-		}
+	public static void close(Statement stm, PreparedStatement ps, ResultSet rs) {
 		if (stm != null) {
 	        try {
 	            stm.close();

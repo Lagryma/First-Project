@@ -15,8 +15,8 @@ public class DeviceInfoController {
 		Statement stm = null;
 		ResultSet rs = null;
 		
-		// Connect to database.
-		Connection conn = DbConnection.db_connect();
+		// Get a connection from pool.
+		Connection conn = DbConnection.get_connection();
 		
 		// Connection is successful.
 		if (conn != null) {
@@ -42,12 +42,13 @@ public class DeviceInfoController {
 				System.out.println("Failed to load device_info rows.");
 				return null;
 			}
-			// Close connections.
+			// Close and release connections.
 			finally {
 //				JOptionPane.showMessageDialog(null, "Table loaded.");
 				System.out.println("Successfully loaded device_info rows");
 				System.out.println("Closing database connections...");
-				DbConnection.close_connections(conn, stm, null, rs);
+				DbConnection.close(stm, null, rs);
+				DbConnection.releaseConnection(conn);
 			}
 			
 			return deviceInfoList;
@@ -68,8 +69,8 @@ public class DeviceInfoController {
 		// Initialize variable
 		PreparedStatement prepStm = null;
 		
-		// Connect to database.
-		Connection conn = DbConnection.db_connect();
+		// Get a connection from pool.
+		Connection conn = DbConnection.get_connection();
 		
 		// Connection is successful.
 		if (conn != null) {
@@ -94,12 +95,13 @@ public class DeviceInfoController {
 				JOptionPane.showMessageDialog(null, "Failed to insert row.");
 				System.out.println("Failed to insert data into device_info.");
 			}
-			// Close connections.
+			// Close and release connections.
 			finally {
 				JOptionPane.showMessageDialog(null, "Row inserted.");
 				System.out.println("Successfully inserted data into device_info.");
 				System.out.println("Closing database connections...");
-				DbConnection.close_connections(conn, null, prepStm, null);
+				DbConnection.close(null, prepStm, null);
+				DbConnection.releaseConnection(conn);
 			}
 		}
 		// Connection is null.
@@ -118,8 +120,8 @@ public class DeviceInfoController {
 		// Initialize variable
 		PreparedStatement prepStm = null;
 		
-		// Connect to database.
-		Connection conn = DbConnection.db_connect();
+		// Get a connection from pool.
+		Connection conn = DbConnection.get_connection();
 		
 		// Connection successful.
 		if (conn != null) {
@@ -145,12 +147,13 @@ public class DeviceInfoController {
 				JOptionPane.showMessageDialog(null, "Failed update row.");
 				System.out.println("Failed to update data into device_info.");
 			}
-			// Close connections.
+			// Close and release connections.
 			finally {
 				JOptionPane.showMessageDialog(null, "Row updated.");
 				System.out.println("Successfully updated data into device_info.");
 				System.out.println("Closing database connections...");
-				DbConnection.close_connections(conn, null, prepStm, null);
+				DbConnection.close(null, prepStm, null);
+				DbConnection.releaseConnection(conn);
 			}
 		}
 		// Connection is null.
@@ -168,8 +171,8 @@ public class DeviceInfoController {
 		// Initialize variable
 		PreparedStatement prepStm = null;
 		
-		// Connect to database.
-		Connection conn = DbConnection.db_connect();
+		// Get a connection from pool.
+		Connection conn = DbConnection.get_connection();
 		
 		// Connection is successful.
 		if (conn != null) {
@@ -189,12 +192,13 @@ public class DeviceInfoController {
 				JOptionPane.showMessageDialog(null, "Failed to delete row.");
 				System.out.println("Failed to delete device_info row.");
 			}
-			// Close connections
+			// Close and release connections.
 			finally {
 				JOptionPane.showMessageDialog(null, "Row deleted.");
 				System.out.println("Successfully deleted device_info row.");
 				System.out.println("Closing database connections...");
-				DbConnection.close_connections(conn, null, prepStm, null);
+				DbConnection.close(null, prepStm, null);
+				DbConnection.releaseConnection(conn);
 			}
 		}
 		// Connection is null.
